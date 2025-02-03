@@ -169,3 +169,24 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+
+*.zip
+*.gz
+*.tar
+*.tar.gz
+*.tgz
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# otter-grader
+__otter_checkpoints/
+__otter_outputs/
+__otter_tests/
+__otter_config/
+__otter_results/
+__otter_logs/
+__otter_locks/
+__otter_submission/
+*.OTTER_LOG
