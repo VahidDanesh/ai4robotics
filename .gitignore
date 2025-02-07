@@ -191,6 +191,7 @@ __otter_locks/
 __otter_submission/
 *.OTTER_LOG
 
-#desktop ini
+#desktop ini 
+# Get-ChildItem -Include desktop.ini -Recurse -Hidden | Remove-Item -Force
 *.ini
 desktop.ini
