@@ -190,3 +190,7 @@ __otter_logs/
 __otter_locks/
 __otter_submission/
 *.OTTER_LOG
+
+#desktop ini
+*.ini
+desktop.ini
