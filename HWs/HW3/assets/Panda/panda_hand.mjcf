@@ -1,0 +1,73 @@
+<mujoco model="panda">
+  <default>
+    <default class="robot">
+      <joint limited="true" damping="0.01" armature="0.01" frictionloss="0.01" actuatorfrcrange="-1000 1000" />
+      <default class="visual">
+        <geom material="visualgeom" contype="0" conaffinity="0" group="2" />
+      </default>
+      <default class="collision">
+        <geom condim="6" conaffinity="15" friction="0.8 0.02 0.01" solimp="0.015 1 0.036" group="3" />
+      </default>
+    </default>
+  </default>
+
+  <compiler angle="radian" meshdir="meshes" />
+
+  <option integrator="implicitfast" cone="elliptic" impratio="100" />
+
+  <visual>
+    <global ellipsoidinertia="true" />
+  </visual>
+
+  <asset>
+    <material name="panda_white" rgba="1. 1. 1. 1." />
+    <material name="default_material" rgba="0.7 0.7 0.7 1" />
+    <mesh name="hand.obj" file="hand.obj" />
+    <mesh name="finger.obj" file="finger.obj" />
+  </asset>
+
+  <worldbody>
+    <light name="top" pos="0 0 30"/>
+    <camera name="front_view" pos="0.0 -2.5 2.2" quat="0.8660254037844386 0.5 0.0 0.0" mode="fixed"/>
+    <body mocap="true" name="panda_hand" pos="-0.5 0.0 1.5" quat="0.0 0.7071067811865476 0.7071067811865476 0.0">
+      <geom name="panda_hand_collision" type="mesh" mesh="hand.obj" class="collision" />
+      <geom name="panda_hand_visual" material="panda_white" type="mesh" mesh="hand.obj" class="visual" />
+      <body name="panda_leftfinger" pos="0 0 0.0584">
+        <joint name="panda_finger_joint1" type="slide" range="0.0 0.04" axis="0 1 0"/>
+        <geom name="panda_leftfinger_collision" type="mesh" mesh="finger.obj" class="collision" />
+        <geom name="panda_leftfinger_visual" material="panda_white" type="mesh" mesh="finger.obj" class="visual" />
+      </body>
+      <body name="panda_rightfinger" pos="0 0 0.0584">
+        <joint name="panda_finger_joint2" type="slide" range="0.0 0.04" axis="0 -1 0"/>
+        <geom name="panda_rightfinger_collision" quat="-1.0341155355510722e-13 -0.0 0.0 1.0" type="mesh" mesh="finger.obj" class="collision" />
+        <geom name="panda_rightfinger_visual" quat="-1.0341155355510722e-13 -0.0 0.0 1.0" material="panda_white" type="mesh" mesh="finger.obj" class="visual" />
+      </body>
+      <site name="panda_hand_site" />
+    </body>
+    <body name="table" pos="0 0 0.5">
+      <geom name="table_collision" type="box" size="0.5 0.5 0.5" class="collision" />
+      <geom name="table_visual" material="default_material" type="box" size="0.5 0.5 0.5" class="visual" />
+    </body>
+    <body name="block" pos="0.2 0.3 1.03" quat="0.96592583 0.0 0.0 0.25881905">
+      <geom name="block_collision" type="box" size="0.03 0.03 0.03" class="collision" />
+      <geom name="block_visual" material="default_material" rgba="1.0 0.0 0.0 1.0" type="box" size="0.03 0.03 0.03" class="visual" />  
+    </body>
+  </worldbody>
+
+  <actuator>
+    <position name="panda_finger_joint1_ctrl" joint="panda_finger_joint1" kp="100" forcerange="-20.00000000 20.00000000" forcelimited="true" ctrlrange="0.0 0.04" ctrllimited="true" class="robot" />
+    <position name="panda_finger_joint2_ctrl" joint="panda_finger_joint2" kp="100" forcerange="-20.00000000 20.00000000" forcelimited="true" ctrlrange="0.0 0.04" ctrllimited="true" class="robot" />
+  </actuator>
+
+  <contact>
+    <exclude body1="panda_hand" body2="panda_leftfinger" />
+    <exclude body1="panda_hand" body2="panda_rightfinger" />
+  </contact>
+
+  <sensor>
+    <framepos name="hand_link_pos" objtype="site" objname="panda_hand_site" />
+    <framequat name="hand_link_quat" objtype="site" objname="panda_hand_site" />
+    <framelinvel name="hand_link_vel" objtype="site" objname="panda_hand_site" />
+    <frameangvel name="hand_link_ang_vel" objtype="site" objname="panda_hand_site" />
+  </sensor>
+</mujoco>
