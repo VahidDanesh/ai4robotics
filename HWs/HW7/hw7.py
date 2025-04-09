@@ -9,6 +9,24 @@ import time
 import argparse
 import os.path
 
+# Fix for Windows path issues with Hugging Face downloads
+# Monkey patch huggingface_hub to handle backslashes correctly
+try:
+    import huggingface_hub
+    original_hf_hub_download = huggingface_hub.hf_hub_download
+    
+    def patched_hf_hub_download(repo_id, filename, **kwargs):
+        # Replace backslashes with forward slashes
+        fixed_filename = filename.replace("\\", "/")
+        return original_hf_hub_download(repo_id, fixed_filename, **kwargs)
+    
+    # Apply the patch
+    huggingface_hub.file_download.hf_hub_download = patched_hf_hub_download
+    huggingface_hub.hf_hub_download = patched_hf_hub_download
+    print("Applied HuggingFace URL path fix for Windows")
+except Exception as e:
+    print(f"Warning: Could not apply HuggingFace URL path fix: {e}")
+
 # Check for CUDA availability
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
@@ -113,24 +131,6 @@ def train(X, Y, net, num_epochs, batchsize, model_path='trained_pusher_policy.pt
         if (epoch + 1) % 5 == 0 or epoch == 0:
             print(f"Epoch {epoch+1}/{num_epochs}, Loss: {avg_epoch_loss:.6f}, Time: {epoch_time:.2f}s")
         
-        # Save model if it's the best so far
-        if avg_epoch_loss < best_loss:
-            best_loss = avg_epoch_loss
-            print(f"New best model with loss: {best_loss:.6f}, saving checkpoint...")
-            # Save trained network and normalizers
-            save_dict = {
-                'net': net.state_dict(),
-                'hid_size': net.layers[0].out_features,  # Get hidden size from the model
-                'num_layers': 2,  # Hard-coded as defined in main()
-                'X_mean': X_normalizer.mean.cpu(),
-                'X_std': X_normalizer.std.cpu(),
-                'Y_mean': Y_normalizer.mean.cpu(),
-                'Y_std': Y_normalizer.std.cpu(),
-                'epoch': epoch,
-                'loss': best_loss
-            }
-            torch.save(save_dict, model_path)
-    
     total_time = time.time() - start_time
     print(f"Training completed in {total_time:.2f} seconds")
     print(f"Best model loss: {best_loss:.6f}")
@@ -139,6 +139,9 @@ def train(X, Y, net, num_epochs, batchsize, model_path='trained_pusher_policy.pt
 
 # Part 2.1: Loading Minari dataset and environment
 def load_minari_data(dataset_name, render_mode=None):
+    # Fix Windows path issue - replace backslashes with forward slashes
+    dataset_name = dataset_name.replace("\\", "/")
+    
     # Load dataset
     dataset = minari.load_dataset(dataset_name, download=True)
     env = dataset.recover_environment(render_mode=render_mode)
@@ -196,7 +199,10 @@ def run_policy(net, env, X_normalizer, Y_normalizer, seed=None):
 def main(visualize=False):
     import os.path
     
-    model_path = 'trained_pusher_policy.pt'
+    model_path = './HWs/HW7/trained_pusher_policy.pt'
+    
+    # Define dataset name with proper path format
+    dataset_name = "mujoco/pusher/expert-v0"
     
     # Check if model exists
     if os.path.isfile(model_path):
@@ -235,11 +241,11 @@ def main(visualize=False):
         print(f"Model loaded from epoch {checkpoint.get('epoch', 'unknown')} with loss {checkpoint.get('loss', 'unknown')}")
         
         # Load environment for testing only
-        _, _, env = load_minari_data("mujoco/pusher/expert-v0")
+        _, _, env = load_minari_data(dataset_name)
     else:
         # Load data for training
         print("No existing model found. Training from scratch.")
-        X, Y, env = load_minari_data("mujoco/pusher/expert-v0")
+        X, Y, env = load_minari_data(dataset_name)
         
         # Print shapes for debugging
         print(f"Original X shape: {X.shape}")
@@ -264,7 +270,7 @@ def main(visualize=False):
         try:
             # Create a new environment with visualization for testing
             print("Loading visualization environment...")
-            _, _, vis_env = load_minari_data("mujoco/pusher/expert-v0", render_mode="human")
+            _, _, vis_env = load_minari_data(dataset_name, render_mode="human")
             
             # Test the policy with visualization
             print("Running policy test with visualization...")
@@ -288,4 +294,4 @@ if __name__ == "__main__":
     parser.add_argument('--visualize', action='store_true', help='Enable visualization of the policy')
     args = parser.parse_args()
     
-    main(visualize=args.visualize) 
+    main(visualize=True) 
