@@ -73,4 +73,4 @@ if __name__ == "__main__":
     if not os.path.exists(model_path):
         print(f"Model file not found: {model_path}")
     else:
-        main(model_path, num_episodes=5)  # Run 5 episodes for better observation 
+        main(model_path, num_episodes=20)  # Run 5 episodes for better observation 
