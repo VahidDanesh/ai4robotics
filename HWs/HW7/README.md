@@ -40,11 +40,7 @@ python train_model.py
 
 The training script will:
 1. Load the MuJoCo pusher dataset
-2. Train a neural network with the following default parameters:
-   - Hidden size: 256
-   - Number of layers: 2
-   - Batch size: 64
-   - Number of epochs: 100
+2. Train a neural network
 3. Save the trained model to `trained_pusher_policy.pt`
 
 ## Visualizing the Model
@@ -65,11 +61,3 @@ This will:
 - Training uses MSE loss and Adam optimizer
 - The environment is rendered in real-time during visualization
 - The policy's performance is measured by the total reward accumulated during an episode
-
-## Submission
-
-Submit the following files:
-1. `hw7.ipynb` with your code implementations
-2. `trained_pusher_policy.pt` containing your trained model
-
-The submission will be evaluated based on the performance of your trained policy in the pusher environment. 
