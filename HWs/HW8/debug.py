@@ -212,7 +212,7 @@ def train_PG_15(env_name,
 
     if use_baseline:
         nn_baseline = FCNN_11(obs_dim, 1, hid_size, num_layers)
-        optimizer_baseline = torch.optim.Adam(nn_baseline.parameters(), lr=1e-3)
+        optimizer_baseline = torch.optim.Adam(nn_baseline.parameters(), lr=learning_rate)
     
     total_timesteps = 0
     returns_history = []
@@ -339,10 +339,10 @@ def test_half_cheetah():
     num_layers = 2
     use_baseline = True  # This is a good candidate for 2.4
     num_iterations = 100
-    batch_size = 30000  # Reasonable value for 2.4
+    batch_size = 30000 
     gamma = 0.95
     normalize_returns = True
-    learning_rate = 1e-2  # Reasonable value for 2.4
+    learning_rate = 2e-2  # Reasonable value for 2.4
     seed = 0
     
     start_time = time.time()
@@ -364,8 +364,9 @@ def test_half_cheetah():
     print(f"Training took {training_time:.2f} seconds")
     
     # Save the trained policy
-    torch.save(policy.state_dict(), 'trained_cheetah_policy-v1.pt')
-    print("Saved policy to trained_cheetah_policy.pt")
+    model_path = f'cheetah_{use_baseline}_{batch_size}_{learning_rate}.pt'
+    torch.save(policy.state_dict(), model_path)
+    print(f"Saved policy to {model_path}")
     
     # Plot the learning curve
     plt.figure(figsize=(10, 6))
@@ -373,7 +374,7 @@ def test_half_cheetah():
     plt.xlabel('Iteration')
     plt.ylabel('Average Return')
     plt.title('Learning Curve for HalfCheetah-v5')
-    plt.savefig('cheetah_learning_curve.png')
+    plt.savefig(f'cheetah_{use_baseline}_{batch_size}_{learning_rate}.png')
     plt.close()
     
     return policy
