@@ -12,3 +12,15 @@ use_baseline=True, batch_size=30000, lr=0.01 -> 947.55
 use_baseline=True, batch_size=30000, lr=0.03 -> 630.60
 use_baseline=True, batch_size=50000, lr=0.001 -> -457.73
 use_baseline=True, batch_size=50000, lr=0.003 -> -20.87
+use_baseline=True, batch_size=50000, lr=0.01 -> 867.89
+use_baseline=True, batch_size=50000, lr=0.03 -> 348.66
+use_baseline=False, batch_size=10000, lr=0.001 -> -489.52
+use_baseline=False, batch_size=10000, lr=0.003 -> -214.68
+use_baseline=False, batch_size=10000, lr=0.01 -> 678.94
+use_baseline=False, batch_size=10000, lr=0.03 -> -219.52
+use_baseline=False, batch_size=30000, lr=0.001 -> -481.29
+use_baseline=False, batch_size=30000, lr=0.003 -> -30.88
+use_baseline=False, batch_size=30000, lr=0.01 -> 623.03
+use_baseline=False, batch_size=30000, lr=0.03 -> -654.48
+use_baseline=False, batch_size=50000, lr=0.001 -> -462.99
+use_baseline=True, batch_size=30000, lr=0.01 -> 939.97

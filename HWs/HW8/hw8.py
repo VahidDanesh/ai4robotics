@@ -226,7 +226,10 @@ def train_PG_15(env_name,
         # Save best policy (optional)
         if undiscounted_return > highest_returns and env_name == "HalfCheetah-v5":
             print(f"\tSaving best policy with return: {undiscounted_return:.3f}")
-            torch.save(policy.state_dict(), 'trained_cheetah_policy.pt')
+            model_path = os.path.join("HWs", "HW8", f"cheetah_policy_{use_baseline}_{batch_size}_{lr}.pt")
+            best_model_path = os.path.join("HWs", "HW8", f"best_cheetah_policy.pt")
+            torch.save(policy.state_dict(), best_model_path)
+            torch.save(policy.state_dict(), model_path)
             highest_returns = undiscounted_return
 
         # Compute the reward-to-go
@@ -339,8 +342,8 @@ if __name__ == "__main__":
     
     # Hyperparameters to search over
     use_baseline_options = [True, False]
-    batch_size_options = [10000, 30000, 50000]
-    learning_rate_options = [1e-3, 3e-3, 1e-2, 3e-2]
+    batch_size_options = [30000]
+    learning_rate_options = [1e-2, 3e-2]
     
     # Fixed hyperparameters
     env_name = "HalfCheetah-v5"
@@ -356,11 +359,11 @@ if __name__ == "__main__":
     best_hyperparams = None
     best_policy = None
     
-    # Log file to track all results
-    with open("HWs/HW8/hyperparameter_search_log.txt", "w") as log_file:
-        log_file.write("Hyperparameter Search Results for HalfCheetah-v5\n")
-        log_file.write("=" * 50 + "\n")
-        log_file.write("Format: use_baseline, batch_size, learning_rate -> max_return\n\n")
+    # # Log file to track all results
+    # with open("HWs/HW8/hyperparameter_search_log.txt", "w") as log_file:
+    #     log_file.write("Hyperparameter Search Results for HalfCheetah-v5\n")
+    #     log_file.write("=" * 50 + "\n")
+    #     log_file.write("Format: use_baseline, batch_size, learning_rate -> max_return\n\n")
     
     # Run grid search
     for use_baseline, batch_size, lr in itertools.product(
@@ -383,7 +386,13 @@ if __name__ == "__main__":
             learning_rate=lr,
             seed=seed
         )
-        
+
+        # load the best saved trained model
+        model_path = os.path.join("HWs", "HW8", f"best_cheetah_policy.pt")
+        policy.load_state_dict(torch.load(model_path))
+        policy.eval()
+        print("Model loaded successfully.")
+        print("Evaluating the trained policy...")
         # Evaluate the trained policy
         eval_env = gym.make(env_name)
         returns = []
@@ -407,9 +416,7 @@ if __name__ == "__main__":
         with open("HWs/HW8/hyperparameter_search_log.txt", "a") as log_file:
             log_file.write(f"use_baseline={use_baseline}, batch_size={batch_size}, lr={lr} -> {avg_return:.2f}\n")
         
-        model_path = os.path.join("HWs", "HW8", f"cheetah_policy_{use_baseline}_{batch_size}_{lr}.pt")
-        torch.save(policy.state_dict(), model_path)
-        print(f"Model saved to {model_path}")
+
         # Save model if it's the best so far
         if avg_return > best_return:
             best_return = avg_return
