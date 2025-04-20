@@ -24,3 +24,6 @@ use_baseline=False, batch_size=30000, lr=0.01 -> 623.03
 use_baseline=False, batch_size=30000, lr=0.03 -> -654.48
 use_baseline=False, batch_size=50000, lr=0.001 -> -462.99
 use_baseline=True, batch_size=30000, lr=0.01 -> 939.97
+use_baseline=True, batch_size=30000, lr=0.03 -> 712.75
+use_baseline=False, batch_size=30000, lr=0.01 -> 737.01
+use_baseline=False, batch_size=30000, lr=0.03 -> 1348.54

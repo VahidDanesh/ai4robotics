@@ -1,0 +1,5 @@
+Best hyperparameters for HalfCheetah-v5:
+use_baseline: False
+batch_size: 30000
+learning_rate: 0.03
+Best average return: 1348.54
