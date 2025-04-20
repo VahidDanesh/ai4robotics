@@ -1,0 +1,14 @@
+Hyperparameter Search Results for HalfCheetah-v5
+==================================================
+Format: use_baseline, batch_size, learning_rate -> max_return
+
+use_baseline=True, batch_size=10000, lr=0.001 -> -519.93
+use_baseline=True, batch_size=10000, lr=0.003 -> -325.97
+use_baseline=True, batch_size=10000, lr=0.01 -> 563.83
+use_baseline=True, batch_size=10000, lr=0.03 -> -86.05
+use_baseline=True, batch_size=30000, lr=0.001 -> -473.39
+use_baseline=True, batch_size=30000, lr=0.003 -> -135.23
+use_baseline=True, batch_size=30000, lr=0.01 -> 947.55
+use_baseline=True, batch_size=30000, lr=0.03 -> 630.60
+use_baseline=True, batch_size=50000, lr=0.001 -> -457.73
+use_baseline=True, batch_size=50000, lr=0.003 -> -20.87
