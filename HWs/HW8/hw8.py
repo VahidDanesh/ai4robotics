@@ -357,7 +357,7 @@ if __name__ == "__main__":
     best_policy = None
     
     # Log file to track all results
-    with open("HW8/hyperparameter_search_log.txt", "w") as log_file:
+    with open("HWs/HW8/hyperparameter_search_log.txt", "w") as log_file:
         log_file.write("Hyperparameter Search Results for HalfCheetah-v5\n")
         log_file.write("=" * 50 + "\n")
         log_file.write("Format: use_baseline, batch_size, learning_rate -> max_return\n\n")
@@ -387,7 +387,7 @@ if __name__ == "__main__":
         # Evaluate the trained policy
         eval_env = gym.make(env_name)
         returns = []
-        for i in range(10):  # Evaluate over 10 episodes
+        for i in range(30):  # Evaluate over 30 episodes
             obs, _ = eval_env.reset(seed=seed+i*1000)
             episode_return = 0
             done = False
@@ -401,12 +401,15 @@ if __name__ == "__main__":
         
         # Calculate average return
         avg_return = np.mean(returns)
-        print(f"\nAverage return over 10 evaluation episodes: {avg_return:.2f}")
+        print(f"\nAverage return over 30 evaluation episodes: {avg_return:.2f}")
         
         # Log result
-        with open("HW8/hyperparameter_search_log.txt", "a") as log_file:
+        with open("HWs/HW8/hyperparameter_search_log.txt", "a") as log_file:
             log_file.write(f"use_baseline={use_baseline}, batch_size={batch_size}, lr={lr} -> {avg_return:.2f}\n")
         
+        model_path = os.path.join("HWs", "HW8", f"cheetah_policy_{use_baseline}_{batch_size}_{lr}.pt")
+        torch.save(policy.state_dict(), model_path)
+        print(f"Model saved to {model_path}")
         # Save model if it's the best so far
         if avg_return > best_return:
             best_return = avg_return
@@ -414,11 +417,8 @@ if __name__ == "__main__":
             best_policy = policy
             
             # Save the current best model
-            model_path = os.path.join("hw8", "best_cheetah_policy.pt")
+            model_path = os.path.join("HWs", "HW8", f"trained_cheetah_policy.pt")
             torch.save(policy.state_dict(), model_path)
-            
-            # Also save to the required filename for submission
-            torch.save(policy.state_dict(), "trained_cheetah_policy.pt")
             
             print(f"New best model saved with return: {avg_return:.2f}")
     
@@ -430,7 +430,7 @@ if __name__ == "__main__":
     print("="*50)
     
     # Save best hyperparameters to a file
-    with open("hw8/best_hyperparameters.txt", "w") as f:
+    with open("HWs/HW8/best_hyperparameters.txt", "w") as f:
         f.write(f"Best hyperparameters for HalfCheetah-v5:\n")
         f.write(f"use_baseline: {best_hyperparams[0]}\n")
         f.write(f"batch_size: {best_hyperparams[1]}\n")
