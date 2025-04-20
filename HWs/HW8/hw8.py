@@ -331,41 +331,112 @@ use_baseline_24 = True
 batch_size_24 = 30000
 learning_rate_24 = 1e-2
 
-# Main execution example (commented out)
+# Main execution for hyperparameter search
 if __name__ == "__main__":
-    # Example usage for InvertedPendulum
-    # policy = train_PG_15(
-    #     env_name="InvertedPendulum-v5",
-    #     hid_size=64,
-    #     num_layers=2,
-    #     num_iterations=100,
-    #     batch_size=batch_size_16,
-    #     gamma=0.99,
-    #     normalize_returns=normalize_returns_16,
-    #     learning_rate=learning_rate_16,
-    #     seed=0
-    # )
+    import os
+    import itertools
     
-    # Example usage for HalfCheetah
-    policy = train_PG_15(
-        env_name="HalfCheetah-v5",
-        hid_size=32,
-        num_layers=2,
-        use_baseline=use_baseline_24,
-        num_iterations=100,
-        batch_size=batch_size_24,
-        gamma=0.95,
-        normalize_returns=True,
-        learning_rate=learning_rate_24,
-        seed=0
-    )
     
-    # To visualize a trained policy:
-    # visualize_policy("InvertedPendulum-v5", policy)
-
+    # Hyperparameters to search over
+    use_baseline_options = [True, False]
+    batch_size_options = [10000, 30000, 50000]
+    learning_rate_options = [1e-3, 3e-3, 1e-2, 3e-2]
     
-    # To load and visualize a saved policy:
-    # saved_policy = GaussianPolicy_11(obs_dim, action_dim, hid_size, num_layers)
-    # saved_policy.load_state_dict(torch.load('trained_cheetah_policy.pt'))
-    visualize_policy("HalfCheetah-v5", policy)
-    pass
+    # Fixed hyperparameters
+    env_name = "HalfCheetah-v5"
+    hid_size = 32
+    num_layers = 2
+    num_iterations = 100
+    gamma = 0.95
+    normalize_returns = True
+    seed = 0
+    
+    # Initialize tracking variables
+    best_return = -np.inf
+    best_hyperparams = None
+    best_policy = None
+    
+    # Log file to track all results
+    with open("HW8/hyperparameter_search_log.txt", "w") as log_file:
+        log_file.write("Hyperparameter Search Results for HalfCheetah-v5\n")
+        log_file.write("=" * 50 + "\n")
+        log_file.write("Format: use_baseline, batch_size, learning_rate -> max_return\n\n")
+    
+    # Run grid search
+    for use_baseline, batch_size, lr in itertools.product(
+        use_baseline_options, batch_size_options, learning_rate_options
+    ):
+        print(f"\n{'='*80}")
+        print(f"Testing with use_baseline={use_baseline}, batch_size={batch_size}, learning_rate={lr}")
+        print(f"{'='*80}\n")
+        
+        # Train policy with current hyperparameters
+        policy = train_PG_15(
+            env_name=env_name,
+            hid_size=hid_size,
+            num_layers=num_layers,
+            use_baseline=use_baseline,
+            num_iterations=num_iterations,
+            batch_size=batch_size,
+            gamma=gamma,
+            normalize_returns=normalize_returns,
+            learning_rate=lr,
+            seed=seed
+        )
+        
+        # Evaluate the trained policy
+        eval_env = gym.make(env_name)
+        returns = []
+        for i in range(10):  # Evaluate over 10 episodes
+            obs, _ = eval_env.reset(seed=seed+i*1000)
+            episode_return = 0
+            done = False
+            while not done:
+                action = policy.sample(torch.from_numpy(obs.astype(np.float32)))
+                action = action.detach().numpy()
+                obs, reward, terminated, truncated, _ = eval_env.step(action)
+                episode_return += reward
+                done = terminated or truncated
+            returns.append(episode_return)
+        
+        # Calculate average return
+        avg_return = np.mean(returns)
+        print(f"\nAverage return over 10 evaluation episodes: {avg_return:.2f}")
+        
+        # Log result
+        with open("HW8/hyperparameter_search_log.txt", "a") as log_file:
+            log_file.write(f"use_baseline={use_baseline}, batch_size={batch_size}, lr={lr} -> {avg_return:.2f}\n")
+        
+        # Save model if it's the best so far
+        if avg_return > best_return:
+            best_return = avg_return
+            best_hyperparams = (use_baseline, batch_size, lr)
+            best_policy = policy
+            
+            # Save the current best model
+            model_path = os.path.join("hw8", "best_cheetah_policy.pt")
+            torch.save(policy.state_dict(), model_path)
+            
+            # Also save to the required filename for submission
+            torch.save(policy.state_dict(), "trained_cheetah_policy.pt")
+            
+            print(f"New best model saved with return: {avg_return:.2f}")
+    
+    # Print final results
+    print("\n" + "="*50)
+    print("Hyperparameter search complete!")
+    print(f"Best hyperparameters: use_baseline={best_hyperparams[0]}, batch_size={best_hyperparams[1]}, learning_rate={best_hyperparams[2]}")
+    print(f"Best average return: {best_return:.2f}")
+    print("="*50)
+    
+    # Save best hyperparameters to a file
+    with open("hw8/best_hyperparameters.txt", "w") as f:
+        f.write(f"Best hyperparameters for HalfCheetah-v5:\n")
+        f.write(f"use_baseline: {best_hyperparams[0]}\n")
+        f.write(f"batch_size: {best_hyperparams[1]}\n")
+        f.write(f"learning_rate: {best_hyperparams[2]}\n")
+        f.write(f"Best average return: {best_return:.2f}\n")
+    
+    # Visualize the best policy
+    print("\nVisualizing the best policy...")
+    visualize_policy("HalfCheetah-v5", best_policy, num_episodes=3)
