@@ -65,11 +65,12 @@ def sample_trajectory_12(env, policy, seed=None):
     done = False
     while not done:
         # Convert observation to tensor
-        obs_tensor = torch.from_numpy(obs.astype(np.float32))
+        device = next(policy.parameters()).device
+        obs_tensor = torch.from_numpy(obs.astype(np.float32)).to(device)
         
         # Sample action using policy
         with torch.no_grad():
-            action = policy.sample(obs_tensor).numpy()
+            action = policy.sample(obs_tensor).cpu().numpy()
         
         # Take action in environment
         next_obs, reward, terminated, truncated, _ = env.step(action)
@@ -88,9 +89,12 @@ def sample_trajectory_12(env, policy, seed=None):
     observations = np.array(observations, dtype=np.float32)
     actions = np.array(actions, dtype=np.float32)
     rewards = np.array(rewards, dtype=np.float32)
-    path = {'observations': torch.from_numpy(observations),
-            'actions': torch.from_numpy(actions),
-            'rewards': torch.from_numpy(rewards),
+    
+    # Create tensors
+    device = next(policy.parameters()).device
+    path = {'observations': torch.from_numpy(observations).to(device),
+            'actions': torch.from_numpy(actions).to(device),
+            'rewards': torch.from_numpy(rewards).to(device),
             'length': steps}
     return path
 
@@ -193,15 +197,19 @@ def train_PG_15(env_name,
     torch.manual_seed(seed)
     np.random.seed(seed)
 
+    # Check if CUDA is available
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+
     # Initialize policy and optimizer
     obs_dim = env.observation_space.shape[0]
     action_dim = env.action_space.shape[0]
     
-    policy = GaussianPolicy_11(obs_dim, action_dim, hid_size, num_layers)
+    policy = GaussianPolicy_11(obs_dim, action_dim, hid_size, num_layers).to(device)
     optimizer = torch.optim.Adam(policy.parameters(), lr=learning_rate)
 
     if use_baseline:
-        nn_baseline = FCNN_11(obs_dim, 1, hid_size, num_layers)
+        nn_baseline = FCNN_11(obs_dim, 1, hid_size, num_layers).to(device)
         optimizer_baseline = torch.optim.Adam(nn_baseline.parameters(), lr=1e-3)
     
     total_timesteps = 0
@@ -214,10 +222,10 @@ def train_PG_15(env_name,
         paths, timesteps = sample_trajectories_12(env, policy, batch_size, seed=seed+iter*100)
         total_timesteps += timesteps
 
-        # Build tensors
-        observations = torch.cat([path['observations'] for path in paths], dim=0)
-        actions = torch.cat([path['actions'] for path in paths], dim=0)
-        rewards = [path['rewards'] for path in paths]
+        # Build tensors and move to device
+        observations = torch.cat([path['observations'] for path in paths], dim=0).to(device)
+        actions = torch.cat([path['actions'] for path in paths], dim=0).to(device)
+        rewards = [path['rewards'].to(device) for path in paths]
 
         # Print the average undiscounted return
         undiscounted_return = torch.cat(rewards).sum() / len(paths)
@@ -310,12 +318,15 @@ def update_baseline_parameters_23(nn_baseline, observations, rewards_to_go, opti
 # Helper function to visualize policy
 def visualize_policy(env_name, policy, num_episodes=10):
     env = gym.make(env_name, render_mode="human")
+    device = next(policy.parameters()).device
+    
     for episode in range(num_episodes):
         obs, _ = env.reset()
         done = False
         while not done:
-            action = policy.sample(torch.from_numpy(obs.astype(np.float32)))
-            action = action.detach().numpy()
+            obs_tensor = torch.from_numpy(obs.astype(np.float32)).to(device)
+            action = policy.sample(obs_tensor)
+            action = action.detach().cpu().numpy()
             obs, reward, terminated, truncated, _ = env.step(action)
             env.render()
             done = terminated or truncated
