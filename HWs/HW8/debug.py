@@ -338,11 +338,11 @@ def test_half_cheetah():
     hid_size = 32
     num_layers = 2
     use_baseline = True  
-    num_iterations = 200
+    num_iterations = 100
     batch_size = 20000 
     gamma = 0.95
     normalize_returns = True
-    learning_rate = 1e-2  
+    learning_rate = 1.5e-2  
     seed = 0
     
     start_time = time.time()
@@ -374,7 +374,7 @@ def test_half_cheetah():
     plt.xlabel('Iteration')
     plt.ylabel('Average Return')
     plt.title('Learning Curve for HalfCheetah-v5')
-    plt.savefig(f'cheetah_{use_baseline}_{batch_size}_{learning_rate}.png')
+    plt.savefig(f'cheetah_{use_baseline}_{batch_size}_{learning_rate}_{num_iterations}.png')
     plt.close()
     
     return policy
