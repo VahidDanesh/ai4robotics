@@ -151,7 +151,7 @@ def compute_baseline_21(nn_baseline, observations, rewards_to_go):
         baseline_values = nn_baseline(observations).squeeze()
 
         rtg_mean = rewards_to_go.mean()
-        rtg_std = rewards_to_go.std() + 1e-5
+        rtg_std = rewards_to_go.std()
 
         baseline_mean = baseline_values.mean()
         baseline_std = baseline_values.std() + 1e-5
@@ -223,7 +223,7 @@ def train_PG_15(env_name,
         print(f"********** Iteration {iter} **********")
 
         # Sample trajectories
-        paths, timesteps = sample_trajectories_12(env, policy, batch_size, seed=seed+iter*1000)
+        paths, timesteps = sample_trajectories_12(env, policy, batch_size, seed=seed)
         total_timesteps += timesteps
 
         # Build tensors
@@ -337,12 +337,12 @@ def test_half_cheetah():
     env_name = "HalfCheetah-v5"
     hid_size = 32
     num_layers = 2
-    use_baseline = True  # This is a good candidate for 2.4
-    num_iterations = 100
-    batch_size = 30000 
+    use_baseline = True  
+    num_iterations = 200
+    batch_size = 20000 
     gamma = 0.95
     normalize_returns = True
-    learning_rate = 2e-2  # Reasonable value for 2.4
+    learning_rate = 1e-2  
     seed = 0
     
     start_time = time.time()
